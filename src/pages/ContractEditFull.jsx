@@ -12,34 +12,41 @@ const ContractEditFull = () => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
   const editorRef = useRef(null);
-  const isInitialMount = useRef(true);
+  const contentLoadedRef = useRef(false);
 
+  // Effect untuk load contract data
   useEffect(() => {
-    // Reset flag setiap kali component mount atau ID berubah
-    isInitialMount.current = true;
-    
     const unsubscribe = subscribeToContracts((data) => {
       const found = data.find(c => c.id === id);
       if (found) {
         setContract(found);
-        
-        // Set HTML content hanya sekali saat pertama kali load
-        if (isInitialMount.current && editorRef.current) {
-          const html = found.customHTML || generateContractHTML(found);
-          editorRef.current.innerHTML = html;
-          isInitialMount.current = false;
-        }
+        // Set content state
+        const html = found.customHTML || generateContractHTML(found);
+        setEditorContent(html);
       }
       setLoading(false);
     });
 
-    return () => {
-      unsubscribe();
-      // Reset flag saat unmount
-      isInitialMount.current = true;
-    };
+    return () => unsubscribe();
   }, [id]);
+
+  // Effect terpisah untuk set innerHTML setelah editor ready
+  useEffect(() => {
+    if (editorRef.current && editorContent && !contentLoadedRef.current) {
+      console.log('Setting editor content:', editorContent.substring(0, 100));
+      editorRef.current.innerHTML = editorContent;
+      contentLoadedRef.current = true;
+    }
+  }, [editorContent]);
+
+  // Reset loaded flag saat unmount
+  useEffect(() => {
+    return () => {
+      contentLoadedRef.current = false;
+    };
+  }, []);
 
   const handleFormat = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -248,6 +255,7 @@ const ContractEditFull = () => {
               fontSize: 'clamp(10pt, 2.5vw, 12pt)', // Responsive font
               touchAction: 'manipulation' // Better touch on mobile
             }}
+            dangerouslySetInnerHTML={{ __html: editorContent }}
           />
         </div>
       </div>
