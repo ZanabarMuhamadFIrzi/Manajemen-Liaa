@@ -346,7 +346,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
         </div>
         
         {/* Actions - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 px-6 py-4 flex gap-3 flex-shrink-0">
+        <div className="bg-white border-t border-gray-200 px-6 py-4 flex gap-3 flex-shrink-0 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <button
             type="button"
             onClick={onClose}
