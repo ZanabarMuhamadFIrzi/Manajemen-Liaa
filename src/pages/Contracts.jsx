@@ -68,16 +68,16 @@ const Contracts = () => {
       <div className="bg-gradient-to-br from-primary-600 to-primary-700 text-white safe-top">
         <div className="px-4 pt-6 pb-6">
           <div className="flex items-center justify-between mb-4">
-            <div>
+            <div className="flex-1 pr-3">
               <h1 className="text-2xl font-bold">Surat Perjanjian</h1>
               <p className="text-primary-100 text-sm">Kelola dokumen perjanjian sewa</p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-xl hover:bg-white/90 transition-colors font-medium shadow-lg"
+              className="flex flex-col items-center gap-1 px-5 py-3 bg-white text-primary-600 rounded-2xl hover:bg-white/90 transition-all active:scale-95 font-bold shadow-xl min-w-[80px]"
             >
-              <FontAwesomeIcon icon={faPlus} />
-              <span className="text-sm">Buat</span>
+              <FontAwesomeIcon icon={faPlus} className="text-2xl" />
+              <span className="text-xs">Buat</span>
             </button>
           </div>
           
@@ -197,14 +197,28 @@ const Contracts = () => {
         )}
       </div>
 
-      {/* Floating Action Button - Alternative di pojok kanan bawah */}
+      {/* Floating Action Button - Lebih besar dan lebih jelas */}
       <button
         onClick={() => setShowCreateModal(true)}
-        className="fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95 z-40 flex items-center justify-center"
+        className="fixed bottom-24 right-4 w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all active:scale-95 z-50 flex items-center justify-center border-4 border-white"
         aria-label="Buat Perjanjian Baru"
+        style={{ boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)' }}
       >
-        <FontAwesomeIcon icon={faPlus} className="text-xl" />
+        <FontAwesomeIcon icon={faPlus} className="text-2xl" />
       </button>
+
+      {/* Alternative: Full Width Button di bawah stats (untuk yang belum ada contracts) */}
+      {contracts.length === 0 && (
+        <div className="px-4 mb-6">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-2xl font-bold text-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+          >
+            <FontAwesomeIcon icon={faPlus} className="text-xl" />
+            <span>Buat Surat Perjanjian</span>
+          </button>
+        </div>
+      )}
 
       {/* Create Modal */}
       <ContractFormModal
