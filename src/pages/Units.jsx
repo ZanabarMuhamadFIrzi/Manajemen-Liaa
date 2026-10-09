@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFilter, faPlus } from '@fortawesome/free-solid-svg-icons';
 import UnitCard from '../components/UnitCard';
-import { useUnits } from '../hooks/useUnits';
+import { useUnits } from '../contexts/UnitsContext';
 
 const Units = () => {
-  const { units, loading, createUnit, removeUnit } = useUnits();
+  const { units, loading, error, createUnit, removeUnit } = useUnits();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // all, terisi, booking, kosong
   const [showAddModal, setShowAddModal] = useState(false);
   const [newUnitNumber, setNewUnitNumber] = useState('');
+
+  // Debug sudah tidak perlu karena di context
+  // console.log('🔍 Units in component:', units.length, 'Loading:', loading, 'Error:', error);
   
   // Add new unit
   const handleAddUnit = async (e) => {
@@ -99,58 +102,97 @@ const Units = () => {
       {/* Filter Tabs */}
       <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
         <div className="px-4 py-3">
-          <div className="grid grid-cols-4 gap-2">
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
-                filterStatus === 'all'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Semua<br/>({units.length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('terisi')}
-              className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
-                filterStatus === 'terisi'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Terisi<br/>({units.filter(u => u.status === 'terisi').length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('booking')}
-              className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
-                filterStatus === 'booking'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Booking<br/>({units.filter(u => u.status === 'booking').length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('kosong')}
-              className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
-                filterStatus === 'kosong'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Kosong<br/>({units.filter(u => u.status === 'kosong').length})
-            </button>
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-4 gap-2">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="h-14 bg-gray-200 rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2">
+              <button
+                onClick={() => setFilterStatus('all')}
+                className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
+                  filterStatus === 'all'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Semua<br/>({units.length})
+              </button>
+              <button
+                onClick={() => setFilterStatus('terisi')}
+                className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
+                  filterStatus === 'terisi'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Terisi<br/>({units.filter(u => u.status === 'terisi').length})
+              </button>
+              <button
+                onClick={() => setFilterStatus('booking')}
+                className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
+                  filterStatus === 'booking'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Booking<br/>({units.filter(u => u.status === 'booking').length})
+              </button>
+              <button
+                onClick={() => setFilterStatus('kosong')}
+                className={`py-2 px-3 rounded-lg font-medium text-xs transition-colors ${
+                  filterStatus === 'kosong'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Kosong<br/>({units.filter(u => u.status === 'kosong').length})
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Units Grid */}
       <div className="px-4 py-4">
-        {filteredUnits.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                    <div>
+                      <div className="h-4 bg-gray-300 rounded w-20 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 rounded-2xl p-8 text-center shadow-sm border border-red-100 mt-8">
+            <p className="text-red-600 font-medium">❌ Gagal memuat data</p>
+            <p className="text-sm text-red-500 mt-1">{error.message}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Muat Ulang
+            </button>
+          </div>
+        ) : filteredUnits.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
             {filteredUnits.map((unit) => (
               <UnitCard 
-                key={unit.id} 
+                key={unit.firebaseId || unit.id} 
                 unit={unit} 
                 onDelete={handleDeleteUnit}
               />
@@ -160,7 +202,11 @@ const Units = () => {
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100 mt-8">
             <FontAwesomeIcon icon={faFilter} className="text-5xl text-gray-300 mb-3" />
             <p className="text-gray-500">Tidak ada unit ditemukan</p>
-            <p className="text-sm text-gray-400 mt-1">Coba ubah filter atau kata kunci pencarian</p>
+            <p className="text-sm text-gray-400 mt-1">
+              {units.length === 0 
+                ? 'Belum ada unit. Klik tombol + untuk menambah unit baru.' 
+                : 'Coba ubah filter atau kata kunci pencarian'}
+            </p>
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBuilding, faHome, faChartLine, faDollarSign, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import StatCard from '../components/StatCard';
 import UnitCard from '../components/UnitCard';
-import { useUnits } from '../hooks/useUnits';
+import { useUnits } from '../contexts/UnitsContext';
 import { updateUnit } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 import { monitorCheckouts } from '../services/checkoutMonitor';
 
 const Dashboard = () => {
-  const { units, loading, checkoutUnit, updateBookingStatus } = useUnits();
+  const { units, loading, error, checkoutUnit, updateBookingStatus } = useUnits();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -19,6 +19,9 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showOccupied, setShowOccupied] = useState(true);
   const [showBooking, setShowBooking] = useState(true);
+
+  // Debug sudah tidak perlu karena di context
+  // console.log('🏠 Dashboard - Units:', units.length, 'Loading:', loading, 'Error:', error);
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -216,54 +219,114 @@ const Dashboard = () => {
 
       {/* Stats Grid */}
       <div className="px-4 -mt-4 mb-6">
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <StatCard
-            icon={faBuilding}
-            label="Total Unit"
-            value={units.length}
-            color="blue"
-          />
-          <StatCard
-            icon={faHome}
-            label="Menginap"
-            value={occupiedUnits.length}
-            color="blue"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard
-            icon={faChartLine}
-            label="Tingkat Hunian"
-            value={`${occupancyRate}%`}
-            color="blue"
-          />
-          <StatCard
-            icon={faDollarSign}
-            label="Pendapatan Hari Ini"
-            value={`Rp ${formatRevenue(totalRevenue)}`}
-            color="blue"
-          />
-        </div>
+        {loading ? (
+          <>
+            {/* Skeleton Loading - Animated */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-3 bg-gray-200 rounded w-16 mb-2"></div>
+                      <div className="h-8 bg-gray-300 rounded w-12"></div>
+                    </div>
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-3 bg-gray-200 rounded w-20 mb-2"></div>
+                      <div className="h-8 bg-gray-300 rounded w-16"></div>
+                    </div>
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : error ? (
+          <div className="bg-red-50 rounded-2xl p-6 text-center shadow-sm border border-red-100">
+            <p className="text-red-600 font-medium">❌ Gagal memuat data</p>
+            <p className="text-sm text-red-500 mt-1">{error.message}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Muat Ulang
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <StatCard
+                icon={faBuilding}
+                label="Total Unit"
+                value={units.length}
+                color="blue"
+              />
+              <StatCard
+                icon={faHome}
+                label="Menginap"
+                value={occupiedUnits.length}
+                color="blue"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                icon={faChartLine}
+                label="Tingkat Hunian"
+                value={`${occupancyRate}%`}
+                color="blue"
+              />
+              <StatCard
+                icon={faDollarSign}
+                label="Pendapatan Hari Ini"
+                value={`Rp ${formatRevenue(totalRevenue)}`}
+                color="blue"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Quick Stats - Available Units */}
       <div className="px-4 mb-6">
-        <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <FontAwesomeIcon icon={faHome} className="text-white text-xl" />
+        {loading ? (
+          <div className="bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl p-5 shadow-lg animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/30 rounded-xl"></div>
+                <div>
+                  <div className="h-4 bg-white/40 rounded w-24 mb-2"></div>
+                  <div className="h-3 bg-white/30 rounded w-20"></div>
+                </div>
               </div>
-              <div>
-                <p className="text-white/80 text-sm font-medium">Unit Tersedia</p>
-                <p className="text-white text-xs">Siap untuk booking</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-5xl font-bold text-white">{availableUnits.length}</p>
+              <div className="w-16 h-16 bg-white/30 rounded"></div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <FontAwesomeIcon icon={faHome} className="text-white text-xl" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm font-medium">Unit Tersedia</p>
+                  <p className="text-white text-xs">Siap untuk booking</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-5xl font-bold text-white">{availableUnits.length}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter Toggle */}
@@ -305,64 +368,87 @@ const Dashboard = () => {
           </a>
         </div>
 
-        {/* Search Bar */}
-        {recentBookings.length > 0 && (
-          <div className="mb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Cari unit, nama, atau nomor HP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <svg 
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {filteredBookings.length > 0 ? (
+        {loading ? (
+          /* Skeleton for bookings */
           <div className="space-y-3">
-            {filteredBookings.map((unit) => (
-              <UnitCard 
-                key={unit.id} 
-                unit={unit} 
-                onShowDetail={handleShowDetail}
-                onCheckout={handleCheckout}
-              />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-300 rounded w-20 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-16"></div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
             ))}
           </div>
-        ) : searchQuery ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
-            <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <p className="text-gray-500 mb-2">Tidak ditemukan</p>
-            <p className="text-sm text-gray-400">Coba kata kunci lain</p>
-          </div>
-        ) : recentBookings.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
-            <FontAwesomeIcon icon={faBuilding} className="text-5xl text-gray-300 mb-3" />
-            <p className="text-gray-500">Belum ada unit terisi</p>
-          </div>
-        ) : null}
+        ) : (
+          <>
+            {/* Search Bar */}
+            {recentBookings.length > 0 && (
+              <div className="mb-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Cari unit, nama, atau nomor HP..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                  <svg 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {filteredBookings.length > 0 ? (
+              <div className="space-y-3">
+                {filteredBookings.map((unit) => (
+                  <UnitCard 
+                    key={unit.id} 
+                    unit={unit} 
+                    onShowDetail={handleShowDetail}
+                    onCheckout={handleCheckout}
+                  />
+                ))}
+              </div>
+            ) : searchQuery ? (
+              <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
+                <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p className="text-gray-500 mb-2">Tidak ditemukan</p>
+                <p className="text-sm text-gray-400">Coba kata kunci lain</p>
+              </div>
+            ) : recentBookings.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
+                <FontAwesomeIcon icon={faBuilding} className="text-5xl text-gray-300 mb-3" />
+                <p className="text-gray-500">Belum ada unit terisi</p>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
       )}
 

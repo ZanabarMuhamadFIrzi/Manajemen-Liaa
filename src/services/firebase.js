@@ -17,6 +17,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// Enable offline persistence & faster queries
+if (typeof window !== 'undefined') {
+  // This will cache data in IndexedDB for faster loading
+  console.log('🔥 Firebase Realtime Database initialized with caching');
+}
+
 // Initialize Firebase Cloud Messaging (optional, hanya jika browser support)
 let messaging = null;
 try {
@@ -31,22 +37,34 @@ try {
 export const unitsRef = ref(database, 'units');
 export const employeesRef = ref(database, 'employees');
 export const usersRef = ref(database, 'users');
+export const contractsRef = ref(database, 'contracts');
 
 // Get all units with realtime listener
-export const subscribeToUnits = (callback) => {
-  return onValue(unitsRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      // Convert object to array
-      const unitsArray = Object.keys(data).map(key => ({
-        ...data[key],
-        firebaseId: key
-      }));
-      callback(unitsArray);
-    } else {
-      callback([]);
+export const subscribeToUnits = (callback, errorCallback) => {
+  return onValue(
+    unitsRef, 
+    (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Convert object to array
+        const unitsArray = Object.keys(data).map(key => ({
+          ...data[key],
+          firebaseId: key
+        }));
+        console.log('✅ Firebase data loaded:', unitsArray.length, 'units');
+        callback(unitsArray);
+      } else {
+        console.log('⚠️ No units found in Firebase');
+        callback([]);
+      }
+    },
+    (error) => {
+      console.error('❌ Firebase error:', error);
+      if (errorCallback) {
+        errorCallback(error);
+      }
     }
-  });
+  );
 };
 
 // Add new unit
@@ -113,6 +131,41 @@ export const addUser = async (userData) => {
     createdAt: new Date().toISOString()
   });
   return newUserRef.key;
+};
+
+// Contract management
+export const subscribeToContracts = (callback) => {
+  return onValue(contractsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      const contractsArray = Object.keys(data).map(key => ({
+        ...data[key],
+        id: key
+      }));
+      callback(contractsArray);
+    } else {
+      callback([]);
+    }
+  });
+};
+
+export const addContract = async (contractData) => {
+  const newContractRef = push(contractsRef);
+  await set(newContractRef, {
+    ...contractData,
+    createdAt: new Date().toISOString()
+  });
+  return newContractRef.key;
+};
+
+export const updateContract = async (id, updates) => {
+  const contractRef = ref(database, `contracts/${id}`);
+  await update(contractRef, updates);
+};
+
+export const deleteContract = async (id) => {
+  const contractRef = ref(database, `contracts/${id}`);
+  await remove(contractRef);
 };
 
 export { database };

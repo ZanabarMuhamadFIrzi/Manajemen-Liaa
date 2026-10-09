@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt, faUser, faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
-import { useUnits } from '../hooks/useUnits';
+import { useUnits } from '../contexts/UnitsContext';
 
 const History = () => {
   const { units, checkoutUnit, extendBooking } = useUnits();

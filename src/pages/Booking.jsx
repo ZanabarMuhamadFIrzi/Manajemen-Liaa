@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faImage } from '@fortawesome/free-solid-svg-icons';
-import { useUnits } from '../hooks/useUnits';
+import { useUnits } from '../contexts/UnitsContext';
 import { useAuth } from '../contexts/AuthContext';
 import Swal from 'sweetalert2';
 

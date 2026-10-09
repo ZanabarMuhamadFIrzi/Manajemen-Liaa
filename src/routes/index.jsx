@@ -2,10 +2,13 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import Dashboard from '../pages/Dashboard';
 import Units from '../pages/Units';
-import Calendar from '../pages/Calendar';
 import Booking from '../pages/Booking';
 import History from '../pages/History';
 import Reports from '../pages/Reports';
+import Contracts from '../pages/Contracts';
+import ContractView from '../pages/ContractView';
+import ContractEdit from '../pages/ContractEdit';
+import ContractEditFull from '../pages/ContractEditFull';
 import Login from '../pages/Login';
 import Attendance from '../pages/Attendance';
 import AdminAttendance from '../pages/AdminAttendance';
@@ -42,10 +45,6 @@ export const router = createBrowserRouter([
         element: <Units />,
       },
       {
-        path: 'calendar',
-        element: <Calendar />,
-      },
-      {
         path: 'booking',
         element: <Booking />,
       },
@@ -56,6 +55,22 @@ export const router = createBrowserRouter([
       {
         path: 'reports',
         element: <Reports />,
+      },
+      {
+        path: 'contracts',
+        element: <Contracts />,
+      },
+      {
+        path: 'contracts/view/:id',
+        element: <ContractView />,
+      },
+      {
+        path: 'contracts/edit/:id',
+        element: <ContractEdit />,
+      },
+      {
+        path: 'contracts/edit-full/:id',
+        element: <ContractEditFull />,
       },
       {
         path: 'admin-attendance',

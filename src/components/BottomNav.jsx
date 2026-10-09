@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faBuilding, faCalendarDays, faChartLine, faCirclePlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faBuilding, faChartLine, faCirclePlus, faUserCheck, faFileContract } from '@fortawesome/free-solid-svg-icons';
 
 const BottomNav = () => {
   const location = useLocation();
@@ -8,9 +8,9 @@ const BottomNav = () => {
   const navItems = [
     { path: '/', icon: faHome, label: 'Home' },
     { path: '/units', icon: faBuilding, label: 'Units' },
-    { path: '/calendar', icon: faCalendarDays, label: 'Kalender' },
-    { path: '/reports', icon: faChartLine, label: 'Laporan' },
     { path: '/booking', icon: faCirclePlus, label: 'Booking' },
+    { path: '/contracts', icon: faFileContract, label: 'Perjanjian' },
+    { path: '/reports', icon: faChartLine, label: 'Laporan' },
     { path: '/admin-attendance', icon: faUserCheck, label: 'Absensi' },
   ];
 

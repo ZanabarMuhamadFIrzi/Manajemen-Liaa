@@ -1,23 +1,145 @@
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { subscribeToUnits, addUnit, updateUnit, deleteUnit } from '../services/firebase';
 import { clearNotificationFlag } from '../services/checkoutMonitor';
 
+const UnitsContext = createContext();
+
 export const useUnits = () => {
+  const context = useContext(UnitsContext);
+  if (!context) {
+    throw new Error('useUnits must be used within UnitsProvider');
+  }
+  return context;
+};
+
+export const UnitsProvider = ({ children }) => {
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const unsubscribeRef = useRef(null);
+  const isInitializedRef = useRef(false);
+  const loadingTimeoutRef = useRef(null);
 
   useEffect(() => {
-    setLoading(true);
+    // Only subscribe once
+    if (isInitializedRef.current) {
+      console.log('⏭️ Already initialized, skipping');
+      return;
+    }
     
-    // Subscribe to realtime updates
-    const unsubscribe = subscribeToUnits((data) => {
-      setUnits(data);
+    isInitializedRef.current = true;
+    let mounted = true;
+    
+    // Try to load from localStorage first (instant!)
+    try {
+      const cachedData = localStorage.getItem('units_cache');
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        const cacheAge = Date.now() - (localStorage.getItem('units_cache_time') || 0);
+        
+        // Use cache if less than 5 minutes old
+        if (cacheAge < 5 * 60 * 1000) {
+          console.log('⚡ Loaded from cache:', parsed.length, 'units');
+          if (mounted) {
+            setUnits(parsed);
+            setLoading(false);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Cache load failed:', err);
+    }
+    
+    console.log('🔄 Subscribing to Firebase...');
+    console.time('Firebase Connection');
+    
+    // AGGRESSIVE TIMEOUT - 5 seconds max
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (!mounted) return;
+      
+      console.timeEnd('Firebase Connection');
+      console.error('⏰ Firebase timeout after 5 seconds');
       setLoading(false);
-    });
+      setError(new Error('Connection timeout - Firebase tidak merespon dalam 5 detik'));
+    }, 5000);
+    
+    try {
+      // Subscribe to realtime updates (will update cache)
+      unsubscribeRef.current = subscribeToUnits(
+        (data) => {
+          if (!mounted) {
+            console.log('⚠️ Component unmounted, ignoring data');
+            return;
+          }
+          
+          console.timeEnd('Firebase Connection');
+          console.log('✅ Units loaded from Firebase:', data.length);
+          
+          // Clear timeout
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+          }
+          
+          // Save to localStorage for next time
+          try {
+            localStorage.setItem('units_cache', JSON.stringify(data));
+            localStorage.setItem('units_cache_time', Date.now().toString());
+            console.log('💾 Saved to cache');
+          } catch (err) {
+            console.warn('Cache save failed:', err);
+          }
+          
+          setUnits(data);
+          setLoading(false);
+          setError(null);
+        },
+        (err) => {
+          if (!mounted) return;
+          
+          console.timeEnd('Firebase Connection');
+          console.error('❌ Firebase error:', err);
+          
+          // Clear timeout
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+          }
+          
+          setError(err);
+          setLoading(false);
+        }
+      );
+    } catch (err) {
+      if (!mounted) return;
+      
+      console.timeEnd('Firebase Connection');
+      console.error('❌ Failed to subscribe:', err);
+      
+      // Clear timeout
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      
+      setError(err);
+      setLoading(false);
+    }
 
     // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      console.log('🧹 Cleanup called');
+      mounted = false;
+      
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      
+      // DON'T unsubscribe on React Strict Mode double mount
+      // Only unsubscribe on real unmount
+      if (unsubscribeRef.current && !isInitializedRef.current) {
+        console.log('🔌 Unsubscribing from Firebase');
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
   }, []);
 
   // Add new unit
@@ -169,7 +291,7 @@ export const useUnits = () => {
     }
   };
 
-  return {
+  const value = {
     units,
     loading,
     error,
@@ -182,4 +304,10 @@ export const useUnits = () => {
     updateBookingStatus,
     clearUnitHistory
   };
+
+  return (
+    <UnitsContext.Provider value={value}>
+      {children}
+    </UnitsContext.Provider>
+  );
 };
