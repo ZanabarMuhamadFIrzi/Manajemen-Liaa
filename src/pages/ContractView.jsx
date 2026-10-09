@@ -34,25 +34,23 @@ const ContractView = () => {
     if (!contentRef.current) return;
 
     try {
-      const element = contentRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`Perjanjian_${contract.tenantName}_${contract.unitNumber}.pdf`);
+      
+      // Use jsPDF's html method for better formatting
+      await pdf.html(contentRef.current, {
+        callback: function (doc) {
+          doc.save(`Perjanjian_${contract.tenantName}_${contract.unitNumber}.pdf`);
+        },
+        x: 15,
+        y: 15,
+        width: 180, // A4 width minus margins
+        windowWidth: 800, // Set consistent window width for rendering
+        html2canvas: {
+          scale: 0.25, // Adjust scale for better quality
+          useCORS: true,
+          logging: false,
+        }
+      });
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Gagal membuat PDF');
