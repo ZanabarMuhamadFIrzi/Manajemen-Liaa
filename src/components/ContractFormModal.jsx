@@ -135,7 +135,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Fixed */}
@@ -345,23 +345,27 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
         </form>
         </div>
         
-        {/* Actions - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 px-6 py-4 flex gap-3 flex-shrink-0 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 active:scale-95 transition-all text-base"
-            disabled={loading}
-          >
-            Batal
-          </button>
+        {/* Floating Action Buttons - Inside Modal */}
+        <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-20">
           <button
             type="submit"
             form="contract-form"
-            className="flex-1 py-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 active:scale-95 transition-all text-base shadow-lg"
             disabled={loading}
+            className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all active:scale-95 flex items-center justify-center font-bold border-4 border-white disabled:opacity-50"
+            style={{ boxShadow: '0 10px 30px rgba(34, 197, 94, 0.4)' }}
           >
-            {loading ? 'Membuat...' : 'Buat Perjanjian'}
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+            ) : (
+              <span className="text-2xl">✓</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-14 h-14 bg-gradient-to-br from-gray-400 to-gray-500 text-white rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all active:scale-95 flex items-center justify-center font-bold border-4 border-white"
+          >
+            <span className="text-xl">✕</span>
           </button>
         </div>
       </div>
