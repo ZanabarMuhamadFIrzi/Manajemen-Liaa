@@ -135,7 +135,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col"
+        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Fixed */}
@@ -159,7 +159,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
 
         {/* Form - Scrollable */}
         <div className="overflow-y-auto flex-1">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+          <form id="contract-form" onSubmit={handleSubmit} className="p-6 pb-4 space-y-6">
           {/* Data Pemilik (Pihak Pertama) */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3">Data Pemilik Unit (Pihak Pertama)</h4>
@@ -342,25 +342,27 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-6 pb-8 mt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 active:scale-95 transition-all text-base"
-              disabled={loading}
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-4 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 active:scale-95 transition-all text-base"
-              disabled={loading}
-            >
-              {loading ? 'Membuat...' : 'Buat Perjanjian'}
-            </button>
-          </div>
         </form>
+        </div>
+        
+        {/* Actions - Fixed at bottom */}
+        <div className="bg-white border-t border-gray-200 px-6 py-4 flex gap-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 active:scale-95 transition-all text-base"
+            disabled={loading}
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            form="contract-form"
+            className="flex-1 py-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 active:scale-95 transition-all text-base shadow-lg"
+            disabled={loading}
+          >
+            {loading ? 'Membuat...' : 'Buat Perjanjian'}
+          </button>
         </div>
       </div>
     </div>
