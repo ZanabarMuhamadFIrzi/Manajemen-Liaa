@@ -74,9 +74,10 @@ const Contracts = () => {
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-xl hover:bg-white/90 transition-colors font-medium shadow-lg"
             >
-              <FontAwesomeIcon icon={faPlus} className="text-2xl" />
+              <FontAwesomeIcon icon={faPlus} />
+              <span className="text-sm">Buat</span>
             </button>
           </div>
           
@@ -195,6 +196,15 @@ const Contracts = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Action Button - Alternative di pojok kanan bawah */}
+      <button
+        onClick={() => setShowCreateModal(true)}
+        className="fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95 z-40 flex items-center justify-center"
+        aria-label="Buat Perjanjian Baru"
+      >
+        <FontAwesomeIcon icon={faPlus} className="text-xl" />
+      </button>
 
       {/* Create Modal */}
       <ContractFormModal
