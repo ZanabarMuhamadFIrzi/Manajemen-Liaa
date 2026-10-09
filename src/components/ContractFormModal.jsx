@@ -159,7 +159,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
 
         {/* Form - Scrollable */}
         <div className="overflow-y-auto flex-1">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
           {/* Data Pemilik (Pihak Pertama) */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3">Data Pemilik Unit (Pihak Pertama)</h4>
@@ -343,18 +343,18 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6 pb-8 mt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300"
+              className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 active:scale-95 transition-all text-base"
               disabled={loading}
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50"
+              className="flex-1 py-4 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 active:scale-95 transition-all text-base"
               disabled={loading}
             >
               {loading ? 'Membuat...' : 'Buat Perjanjian'}
