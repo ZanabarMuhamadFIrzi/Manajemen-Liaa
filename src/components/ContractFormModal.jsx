@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileContract, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { addContract } from '../services/firebase';
@@ -30,6 +30,34 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+
+    return () => {
+      // Cleanup
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,10 +130,16 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
-      <div className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Fixed */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
               <FontAwesomeIcon icon={faFileContract} className="text-primary-600" />
@@ -117,14 +151,15 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <FontAwesomeIcon icon={faTimes} className="text-gray-500" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {/* Form - Scrollable */}
+        <div className="overflow-y-auto flex-1">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Data Pemilik (Pihak Pertama) */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3">Data Pemilik Unit (Pihak Pertama)</h4>
@@ -326,6 +361,7 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
