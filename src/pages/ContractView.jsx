@@ -34,28 +34,62 @@ const ContractView = () => {
     if (!contentRef.current) return;
 
     try {
+      // Clone element untuk manipulasi
+      const element = contentRef.current.cloneNode(true);
+      
+      // Set width explicitly untuk konsistensi
+      element.style.width = '210mm';
+      element.style.padding = '20mm';
+      element.style.backgroundColor = 'white';
+      element.style.fontFamily = "'Times New Roman', serif";
+      element.style.fontSize = '12pt';
+      element.style.lineHeight = '1.6';
+      
+      // Append ke body sementara (hidden)
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      document.body.appendChild(element);
+
+      // Generate canvas dengan kualitas tinggi
+      const canvas = await html2canvas(element, {
+        scale: 3, // High quality
+        useCORS: true,
+        logging: false,
+        width: 794, // A4 width in pixels at 96 DPI (210mm)
+        windowWidth: 794,
+        backgroundColor: '#ffffff',
+        imageTimeout: 0,
+        removeContainer: false
+      });
+
+      // Remove temporary element
+      document.body.removeChild(element);
+
+      // Calculate PDF dimensions
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       
-      // Use jsPDF's html method with better settings
-      await pdf.html(contentRef.current, {
-        callback: function (doc) {
-          doc.save(`Perjanjian_${contract.tenantName}_${contract.unitNumber}.pdf`);
-        },
-        margin: [15, 15, 15, 15], // top, left, bottom, right
-        autoPaging: 'text', // Better page breaking for text content
-        x: 0,
-        y: 0,
-        width: 170, // A4 width (210mm) minus margins (15mm each side)
-        windowWidth: 650, // Smaller window for better text rendering
-        html2canvas: {
-          scale: 2, // Higher scale for better quality
-          useCORS: true,
-          logging: false,
-          letterRendering: true, // Better text rendering
-          allowTaint: true,
-          removeContainer: true
-        }
-      });
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+
+      // Add additional pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Perjanjian_${contract.tenantName}_${contract.unitNumber}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Gagal membuat PDF');
