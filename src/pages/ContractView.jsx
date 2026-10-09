@@ -36,19 +36,24 @@ const ContractView = () => {
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       
-      // Use jsPDF's html method for better formatting
+      // Use jsPDF's html method with better settings
       await pdf.html(contentRef.current, {
         callback: function (doc) {
           doc.save(`Perjanjian_${contract.tenantName}_${contract.unitNumber}.pdf`);
         },
-        x: 15,
-        y: 15,
-        width: 180, // A4 width minus margins
-        windowWidth: 800, // Set consistent window width for rendering
+        margin: [15, 15, 15, 15], // top, left, bottom, right
+        autoPaging: 'text', // Better page breaking for text content
+        x: 0,
+        y: 0,
+        width: 170, // A4 width (210mm) minus margins (15mm each side)
+        windowWidth: 650, // Smaller window for better text rendering
         html2canvas: {
-          scale: 0.25, // Adjust scale for better quality
+          scale: 2, // Higher scale for better quality
           useCORS: true,
           logging: false,
+          letterRendering: true, // Better text rendering
+          allowTaint: true,
+          removeContainer: true
         }
       });
     } catch (error) {
@@ -129,10 +134,22 @@ const ContractView = () => {
 
       {/* Contract Content */}
       <div className="max-w-4xl mx-auto py-8 px-4">
-        <div className="bg-white shadow-lg print:shadow-none">
+        <div 
+          className="bg-white shadow-lg print:shadow-none"
+          style={{
+            pageBreakInside: 'avoid',
+            breakInside: 'avoid'
+          }}
+        >
           <div
             ref={contentRef}
             dangerouslySetInnerHTML={{ __html: getContractHTML() }}
+            style={{
+              pageBreakInside: 'auto',
+              fontSize: '12pt',
+              lineHeight: '1.8',
+              fontFamily: "'Times New Roman', serif"
+            }}
           />
         </div>
       </div>
