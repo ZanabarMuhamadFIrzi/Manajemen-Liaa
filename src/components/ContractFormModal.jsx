@@ -131,35 +131,21 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center"
-      onClick={onClose}
+      className="fixed inset-0 bg-white z-50 overflow-y-auto"
     >
-      <div 
-        className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header - Fixed */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
-              <FontAwesomeIcon icon={faFileContract} className="text-primary-600" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">Buat Surat Perjanjian</h3>
-              <p className="text-sm text-gray-500">Isi data untuk generate perjanjian</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <FontAwesomeIcon icon={faTimes} className="text-gray-500" />
-          </button>
-        </div>
+      {/* Simple Header with Close */}
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-900">Buat Surat Perjanjian</h3>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <FontAwesomeIcon icon={faTimes} className="text-gray-500 text-xl" />
+        </button>
+      </div>
 
-        {/* Form - Scrollable */}
-        <div className="overflow-y-auto flex-1">
-          <form id="contract-form" onSubmit={handleSubmit} className="p-6 pb-4 space-y-6">
+      {/* Full Page Form */}
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-4 pb-32 space-y-6">
           {/* Data Pemilik (Pihak Pertama) */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3">Data Pemilik Unit (Pihak Pertama)</h4>
@@ -342,35 +328,30 @@ const ContractFormModal = ({ isOpen, onClose, initialData = {} }) => {
             </div>
           </div>
 
+          {/* Submit Button - Simple di dalam form */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-2xl font-bold text-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <span>Sedang Membuat...</span>
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faFileContract} />
+                  <span>Buat Surat Perjanjian</span>
+                </>
+              )}
+            </button>
+          </div>
+
         </form>
-        </div>
-        
-        {/* Floating Action Buttons - Inside Modal */}
-        <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-20">
-          <button
-            type="submit"
-            form="contract-form"
-            disabled={loading}
-            className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all active:scale-95 flex items-center justify-center font-bold border-4 border-white disabled:opacity-50"
-            style={{ boxShadow: '0 10px 30px rgba(34, 197, 94, 0.4)' }}
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-            ) : (
-              <span className="text-2xl">✓</span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-14 h-14 bg-gradient-to-br from-gray-400 to-gray-500 text-white rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all active:scale-95 flex items-center justify-center font-bold border-4 border-white"
-          >
-            <span className="text-xl">✕</span>
-          </button>
-        </div>
       </div>
-    </div>
-  );
+    );
 };
 
 export default ContractFormModal;
