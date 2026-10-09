@@ -16,6 +16,9 @@ const ContractEditFull = () => {
   const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Reset flag setiap kali component mount atau ID berubah
+    isInitialMount.current = true;
+    
     const unsubscribe = subscribeToContracts((data) => {
       const found = data.find(c => c.id === id);
       if (found) {
@@ -31,7 +34,11 @@ const ContractEditFull = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      // Reset flag saat unmount
+      isInitialMount.current = true;
+    };
   }, [id]);
 
   const handleFormat = (command, value = null) => {
@@ -69,8 +76,6 @@ const ContractEditFull = () => {
         timer: 2000
       });
 
-      // Reset flag untuk reload berikutnya
-      isInitialMount.current = true;
       navigate(`/contracts/view/${id}`);
     } catch (error) {
       console.error('Error updating contract:', error);
@@ -96,7 +101,6 @@ const ContractEditFull = () => {
       cancelButtonText: 'Lanjut Edit'
     }).then((result) => {
       if (result.isConfirmed) {
-        isInitialMount.current = true;
         navigate(`/contracts/view/${id}`);
       }
     });
